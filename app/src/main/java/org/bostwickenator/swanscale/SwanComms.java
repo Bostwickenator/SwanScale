@@ -61,6 +61,8 @@ public class SwanComms {
 
     boolean shouldConnect = false;
 
+    double lastWeight = -1.0;
+
     public SwanComms(Context context) {
         mContext = context;
         mListeners = new ArrayList<>();
@@ -157,6 +159,7 @@ public class SwanComms {
             case ADC:
                 if (value[3] == 1) {
                     System.out.println("adc " + (((value[4] & 0xFF) << 8) + (value[5] & 0xFF)) / 10.0f);
+                    weightFinalized();
                 }
                 break;
             default:
@@ -172,7 +175,14 @@ public class SwanComms {
         }
     }
 
+    private void weightFinalized() {
+        for (SwanDataListener listener: mListeners) {
+            listener.onFinalWeight(lastWeight);
+        }
+    }
+
     private void weightUpdate(double kilograms) {
+        lastWeight = kilograms;
         for (SwanDataListener listener: mListeners) {
             listener.onWeightUpdate(kilograms);
         }

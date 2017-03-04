@@ -6,5 +6,6 @@ package org.bostwickenator.swanscale;
 public interface SwanDataListener {
 
     public void onWeightUpdate(double kilograms);
+    public void onFinalWeight(double kilograms);
     public void onConnectionStateUpdate(SwanConnectionState newState);
 }
