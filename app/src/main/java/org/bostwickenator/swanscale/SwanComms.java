@@ -34,11 +34,11 @@ public class SwanComms {
     //BYTE 0 always AC
     //BYTE 1
     //BYTE 2 values
-    int BODY_FAT = 0xFE;
-    int ADC = 0xFD;
-    int USER_ID = 0xFC;
-    int MCU_DATE = 0xFB;
-    int MCU_TIME = 0xFA;
+    final int BODY_FAT = 0xFE;
+    final int ADC = 0xFD;
+    final int USER_ID = 0xFC;
+    final int MCU_DATE = 0xFB;
+    final int MCU_TIME = 0xFA;
     //anything else is weight
 
     //BYTE 6 datatype?
@@ -151,13 +151,24 @@ public class SwanComms {
             return;
         }
 
-        if ((value[2] & 0xFF) < 0xF0) {
-            ByteBuffer wrapped = ByteBuffer.wrap(value);
-            int decagrams = wrapped.getShort(2);
-            double kilograms = decagrams / 10.0;
-            System.out.println("kilos  " + kilograms);
-            System.out.println("pounds " + 2.20462 * kilograms);
-            weightUpdate(kilograms);
+        int type = (value[2] & 0xFF);
+
+        switch (type) {
+            case ADC:
+                if (value[3] == 1) {
+                    System.out.println("adc " + (((value[4] & 0xFF) << 8) + (value[5] & 0xFF)) / 10.0f);
+                }
+                break;
+            default:
+                if (type < 0xF0) {
+                    ByteBuffer wrapped = ByteBuffer.wrap(value);
+                    int decagrams = wrapped.getShort(2);
+                    double kilograms = decagrams / 10.0;
+                    System.out.println("kilos  " + kilograms);
+                    System.out.println("pounds " + 2.20462 * kilograms);
+                    weightUpdate(kilograms);
+                }
+                break;
         }
     }
 
