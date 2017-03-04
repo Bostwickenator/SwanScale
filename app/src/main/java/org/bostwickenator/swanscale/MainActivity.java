@@ -1,9 +1,15 @@
 package org.bostwickenator.swanscale;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,9 +25,12 @@ import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataSource;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.result.DataReadResult;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SwanDataListener {
@@ -35,11 +44,34 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         mSawnComms = new SwanComms(this);
         mSawnComms.addSwanDataListener(this);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -53,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
         mSawnComms.disconnect();
     }
 
+
     @Override
     public void onWeightUpdate(final double kilograms) {
         this.runOnUiThread(new Runnable() {
@@ -65,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
 
     @Override
     public void onConnectionStateUpdate(final SwanConnectionState newState) {
-
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -79,14 +111,8 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
         if (!mFitnessClient.isConnected()) {
             return;
         }
-        Calendar cal = Calendar.getInstance();
+        updateSyncing(true);
         Date now = new Date();
-        cal.setTime(now);
-        long endTime = cal.getTimeInMillis();
-        cal.add(Calendar.SECOND, -1);
-        long startTime = cal.getTimeInMillis();
-
-// Create a data source
         DataSource dataSource = new DataSource.Builder()
                 .setAppPackageName(this)
                 .setDataType(DataType.TYPE_WEIGHT)
@@ -95,17 +121,24 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
                 .build();
 
         DataSet dataSet = DataSet.create(dataSource);
-// For each data point, specify a start time, end time, and the data value -- in this case,
-// the number of new steps.
-        DataPoint dataPoint = dataSet.createDataPoint()
-                .setTimeInterval(startTime, endTime, TimeUnit.MILLISECONDS);
+        DataPoint dataPoint = dataSet.createDataPoint().setTimestamp(now.getTime(), TimeUnit.MILLISECONDS);
         dataPoint.getValue(Field.FIELD_WEIGHT).setFloat((float)kilograms);
         dataSet.add(dataPoint);
         PendingResult<Status> result = Fitness.HistoryApi.insertData(mFitnessClient, dataSet);
         result.setResultCallback(new ResultCallback<Status>() {
             @Override
-            public void onResult(@NonNull Status status) {
+            public void onResult(Status status) {
                 Log.i(TAG, "weight uploaded: " + status.getStatus().isSuccess());
+                updateSyncing(false);
+            }
+        });
+    }
+
+    private void updateSyncing(final boolean syncing) {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                findViewById(R.id.progressBarGoogleFit).setVisibility(syncing ? View.VISIBLE : View.INVISIBLE);
             }
         });
     }
@@ -122,6 +155,7 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
                             @Override
                             public void onConnected(Bundle bundle) {
                                 Log.i(TAG, "Fitness Api connected");
+                                getLastWeight();
                             }
 
                             @Override
@@ -146,5 +180,43 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
                     }
                 })
                 .build();
+    }
+
+
+    private void setWeekPeriod(DataReadRequest.Builder builder) {
+        Date now = new Date();
+        Calendar cal = new GregorianCalendar();
+        cal.setTime(now);
+        long end = cal.getTimeInMillis();
+        cal.add(Calendar.DAY_OF_WEEK, -7);
+        long start = cal.getTimeInMillis();
+        builder.setTimeRange(start, end, TimeUnit.MILLISECONDS);
+    }
+
+    private void getLastWeight() {
+        DataReadRequest.Builder builder = new DataReadRequest.Builder();
+        builder.read(DataType.TYPE_WEIGHT);
+        builder.setLimit(1);
+        setWeekPeriod(builder);
+        PendingResult<DataReadResult> result = Fitness.HistoryApi.readData(mFitnessClient, builder.build());
+        result.setResultCallback(new ResultCallback<DataReadResult>() {
+                                     @Override
+                                     public void onResult(DataReadResult dataReadResult) {
+                                         DataSet weight = dataReadResult.getDataSet(DataType.TYPE_WEIGHT);
+                                         DataPoint point = weight.getDataPoints().get(0);
+                                         float kilograms = point.getValue(Field.FIELD_WEIGHT).asFloat();
+                                         setLastWeight(kilograms);
+                                     }
+                                 }
+        );
+    }
+
+    private void setLastWeight(final float kilograms) {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.textViewLastWeight)).setText("" + kilograms + "kg");
+            }
+        });
     }
 }
