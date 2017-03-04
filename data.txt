@@ -1,0 +1,27 @@
+AC0200000000CECE -- nothing
+AC0202F90000CEC9 -- 167.7 pounds, 2683.2 oucne, 76.06744kg
+
+
+AC02 FE000000CCCA -- session start
+
+AC02 012D0000CEFC -- first weight
+
+AC02 02F00000CEC0
+
+AC02 02F00000CABC -- last weight
+
+
+AC02 FD000000CBC8 -- next message is fat?
+
+
+example 1
+AC02 FD0102 65 CB 30
+example 2
+AC02 FD0102 91 CB 5C
+example 3
+AC02 FD0102 69 CB 34 -- 31%
+example 4
+AC02FD01025BCB26
+
+AC02 FE0F0000CCD9 -- reporting finished
+AC02 FE010000CCCB -- scale sleeping
