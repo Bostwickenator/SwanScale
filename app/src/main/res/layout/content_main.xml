@@ -1,104 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/content_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="org.bostwickenator.swanscale.MainActivity"
-    android:orientation="vertical"
     tools:showIn="@layout/activity_main">
 
-
-<RelativeLayout
-    android:layout_weight="1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <TextView
-        android:layout_centerInParent="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textViewWeight"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
-        android:textSize="35sp" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/textViewConnectionState" />
-</RelativeLayout>
-<RelativeLayout
-    android:layout_weight="1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" android:id="@+id/googleFitLayout">
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@mipmap/fit_icon"
-            android:id="@+id/imageView" />
-        <TextView
-            android:text="Google Fit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textViewSync" />
-
-        <ProgressBar
-            android:layout_toRightOf="@id/textViewSync"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="invisible"
-            android:layout_marginLeft="10dp"
-            android:id="@+id/progressBarGoogleFit" />
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:layout_width="wrap_content"     android:layout_centerHorizontal="true"
-        android:layout_height="wrap_content" android:orientation="vertical">
-
-
-
-        <TextView
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textViewLastWeight"
-            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
-            android:textSize="35sp" />
-        <TextView
-            android:layout_centerHorizontal="true"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textViewLastWeightLabel"
-            android:text="Last Weight" /></LinearLayout>
-
-
-</RelativeLayout>
-<RelativeLayout
-    android:layout_weight="1"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <Switch
-        android:text="Sync to Google Fit"
+    <android.support.v7.widget.CardView
+        app:cardUseCompatPadding="true"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/switchGoogleFitSync" />
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        card_view:cardCornerRadius="2dp" android:clipChildren="false">
 
-</RelativeLayout>
+        <RelativeLayout
+        android:padding="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" android:clipChildren="false">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true">
+
+                <TextView
+                    android:id="@+id/textViewScale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/imageViewScale"
+                    android:text="Bluetooth" />
+
+                <ImageView
+                    android:id="@+id/imageViewScale"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@id/textViewScale"
+                    android:layout_alignTop="@id/textViewScale"
+                    android:src="@drawable/ic_scale" />
+
+                <ProgressBar
+                    android:id="@+id/progressBarScale"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@id/textViewScale"
+                    android:visibility="invisible" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/textViewWeight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+                android:textSize="35sp" />
+
+            <TextView
+                android:id="@+id/textViewConnectionState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:clipChildren="false">
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fabSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:fabSize="mini"
+                android:src="@drawable/ic_save_measurement"
+                android:scaleType="fitXY"
+                app:useCompatPadding="true"
+                app:rippleColor="@color/colorPrimary"
+                android:elevation="8dp"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:cropToPadding="false"
+                android:layout_marginBottom="-6dp"
+                android:adjustViewBounds="false" />
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+    <android.support.v7.widget.CardView
+        app:cardUseCompatPadding="true"
+        android:id="@+id/googleFitLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_weight="1"
+
+        card_view:cardCornerRadius="2dp">
+
+        <RelativeLayout
+            android:padding="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true">
+
+                <TextView
+                    android:id="@+id/textViewSync"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/imageView"
+                    android:text="Google Fit" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBottom="@id/textViewSync"
+                    android:layout_alignTop="@id/textViewSync"
+                    android:src="@mipmap/fit_icon" />
+
+                <ProgressBar
+                    android:id="@+id/progressBarGoogleFit"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_toRightOf="@id/textViewSync"
+                    android:visibility="invisible" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textViewLastWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+                    android:textSize="35sp" />
+
+                <TextView
+                    android:id="@+id/textViewLastWeightLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:text="Last Weight" />
+            </LinearLayout>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
 </LinearLayout>

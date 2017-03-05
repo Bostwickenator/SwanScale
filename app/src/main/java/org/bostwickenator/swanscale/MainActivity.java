@@ -1,9 +1,13 @@
 package org.bostwickenator.swanscale;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -11,6 +15,7 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.Scopes;
@@ -39,15 +44,31 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
 
     SwanComms mSawnComms;
     GoogleApiClient mFitnessClient;
+    FloatingActionButton fabSave;
+    double finalWeight = -1;
+    Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mContext = this;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mSawnComms = new SwanComms(this);
         mSawnComms.addSwanDataListener(this);
+
+        fabSave = (FloatingActionButton)findViewById(R.id.fabSave);
+        fabSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (finalWeight > 0) {
+                    saveWeight(finalWeight);
+                } else {
+                    Toast.makeText(mContext, R.string.no_data, Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     @Override
@@ -75,8 +96,12 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
     @Override
     protected void onResume() {
         super.onResume();
-        mSawnComms.connect();
-        buildFitnessClient();
+        if(checkPermissions()) {
+            mSawnComms.connect();
+            buildFitnessClient();
+        } else {
+            requestPermissions();
+        }
     }
 
     @Override
@@ -85,6 +110,17 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
         mSawnComms.disconnect();
     }
 
+    private boolean checkPermissions() {
+        int permission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+        return permission == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermissions() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                7);
+
+    }
 
     @Override
     public void onWeightUpdate(final double kilograms) {
@@ -107,7 +143,17 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
     }
 
     @Override
-    public void onFinalWeight(final double kilograms) {
+    public void onFinalWeight(double kilograms) {
+        finalWeight = kilograms;
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+               fabSave.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    private void saveWeight(final double kilograms) {
         if (!mFitnessClient.isConnected()) {
             return;
         }
@@ -130,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
             public void onResult(Status status) {
                 Log.i(TAG, "weight uploaded: " + status.getStatus().isSuccess());
                 updateSyncing(false);
+                fabSave.setVisibility(View.INVISIBLE);
             }
         });
     }

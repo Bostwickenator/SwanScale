@@ -75,7 +75,6 @@ public class SwanComms {
         mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
         createScanCallback();
         createBluetoothGattCallback();
-
         beginScan();
     }
 
@@ -159,8 +158,8 @@ public class SwanComms {
             case ADC:
                 if (value[3] == 1) {
                     System.out.println("adc " + (((value[4] & 0xFF) << 8) + (value[5] & 0xFF)) / 10.0f);
-                    weightFinalized();
                 }
+                weightFinalized();
                 break;
             default:
                 if (type < 0xF0) {
@@ -218,6 +217,7 @@ public class SwanComms {
 
     private ScanSettings getScanSettings() {
         ScanSettings.Builder builder = new ScanSettings.Builder();
+        //builder.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY);
         return builder.build();
     }
 
