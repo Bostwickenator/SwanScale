@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,14 +35,20 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DataReadResult;
 
+import java.text.Format;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Formatter;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements SwanDataListener {
 
     private static final String TAG = "MainActivity";
+
+    private static final float KILOGRAMS_TO_POUNDS = 2.204623f;
 
     SwanComms mSawnComms;
     GoogleApiClient mFitnessClient;
@@ -69,6 +77,8 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
                 }
             }
         });
+
+        updateFitSectionVisibility();
     }
 
     @Override
@@ -96,12 +106,19 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
     @Override
     protected void onResume() {
         super.onResume();
+
+        updateFitSectionVisibility();
+
         if(checkPermissions()) {
             mSawnComms.connect();
             buildFitnessClient();
         } else {
             requestPermissions();
         }
+    }
+
+    private void updateFitSectionVisibility() {
+        findViewById(R.id.googleFitLayout).setVisibility(SettingsManager.getFitSync(this) ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -123,13 +140,24 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
     }
 
     @Override
-    public void onWeightUpdate(final double kilograms) {
+    public void onWeightUpdate(double kilograms) {
+        final String toShow = formatWeight(kilograms);
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ((TextView)findViewById(R.id.textViewWeight)).setText("" + kilograms + "kg");
+                ((TextView)findViewById(R.id.textViewWeight)).setText(toShow);
             }
         });
+    }
+
+    private String formatWeight(double kilograms) {
+        String toShow;
+        if (SettingsManager.getIsMetric(this)) {
+            toShow = String.format("%.1f", kilograms) + "kg";
+        } else {
+            toShow = String.format("%.1f", kilograms * KILOGRAMS_TO_POUNDS) + "lb";
+        }
+        return toShow;
     }
 
     @Override
@@ -149,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
             @Override
             public void run() {
                fabSave.setVisibility(View.VISIBLE);
+               fabSave.startAnimation(AnimationUtils.loadAnimation(mContext, R.anim.in));
             }
         });
     }
@@ -175,10 +204,35 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
             @Override
             public void onResult(Status status) {
                 Log.i(TAG, "weight uploaded: " + status.getStatus().isSuccess());
-                updateSyncing(false);
-                fabSave.setVisibility(View.INVISIBLE);
+                onSaveComplete();
             }
         });
+    }
+
+    private void onSaveComplete() {
+        updateSyncing(false);
+        Animation out = AnimationUtils.loadAnimation(this, R.anim.out);
+        out.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                fabSave.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        fabSave.startAnimation(out);
+
+        ((TextView)findViewById(R.id.textViewWeight)).setText("");
+        ((TextView)findViewById(R.id.textViewLastWeight)).setText(formatWeight(finalWeight));
+
     }
 
     private void updateSyncing(final boolean syncing) {
@@ -191,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
     }
 
     private void buildFitnessClient() {
-        if (mFitnessClient != null) {
+        if (mFitnessClient != null || !SettingsManager.getFitSync(this)) {
             return;
         }
         mFitnessClient = new GoogleApiClient.Builder(this)
@@ -250,9 +304,14 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
                                      @Override
                                      public void onResult(DataReadResult dataReadResult) {
                                          DataSet weight = dataReadResult.getDataSet(DataType.TYPE_WEIGHT);
-                                         DataPoint point = weight.getDataPoints().get(0);
-                                         float kilograms = point.getValue(Field.FIELD_WEIGHT).asFloat();
-                                         setLastWeight(kilograms);
+                                         List<DataPoint> points = weight.getDataPoints();
+                                         if (points.size() > 0) {
+                                             DataPoint point = points.get(0);
+                                             float kilograms = point.getValue(Field.FIELD_WEIGHT).asFloat();
+                                             setLastWeight(kilograms);
+                                         } else {
+                                             setLastWeightUnavailable();
+                                         }
                                      }
                                  }
         );
@@ -262,8 +321,17 @@ public class MainActivity extends AppCompatActivity implements SwanDataListener 
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ((TextView)findViewById(R.id.textViewLastWeight)).setText("" + kilograms + "kg");
+                ((TextView)findViewById(R.id.textViewLastWeight)).setText(formatWeight(kilograms));
             }
         });
     }
+    private void setLastWeightUnavailable() {
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ((TextView)findViewById(R.id.textViewLastWeight)).setText("Unavailable");
+            }
+        });
+    }
+
 }

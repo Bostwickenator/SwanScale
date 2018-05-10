@@ -72,6 +72,13 @@ public class SwanComms {
         shouldConnect = true;
         mBluetoothManager = (BluetoothManager)mContext.getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = mBluetoothManager.getAdapter();
+
+
+        if(mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()){
+            connectionStateUpdate(SwanConnectionState.BLUETOOTH_DISABLED);
+            return;
+        }
+
         mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
         createScanCallback();
         createBluetoothGattCallback();

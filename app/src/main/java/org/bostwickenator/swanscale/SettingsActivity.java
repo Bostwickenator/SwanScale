@@ -8,13 +8,15 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
+import static org.bostwickenator.swanscale.SettingsManager.PREFS_NAME;
+import static org.bostwickenator.swanscale.SettingsManager.SETTING_FIT_SYNC;
+import static org.bostwickenator.swanscale.SettingsManager.SETTING_METRIC_UNITS;
+
 public class SettingsActivity extends AppCompatActivity {
 
     SharedPreferences mSharedPreferences;
 
-    public static final String PREFS_NAME = "prefs";
-    public static final String SETTING_FIT_SYNC = "fitsync";
-    public static final String SETTING_METRIC_UNITS = "metric_units";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +31,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void setupCheckbox(int id, final String setting) {
         Switch checkBox = (Switch) findViewById(id);
-        checkBox.setChecked(mSharedPreferences.getBoolean(setting, false));
+        checkBox.setChecked(mSharedPreferences.getBoolean(setting, true));
 
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

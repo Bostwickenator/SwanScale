@@ -8,5 +8,6 @@ public enum SwanConnectionState {
     SEARCHING,
     CONNECTING,
     CONNECTED,
-    DISCONNECTED
+    DISCONNECTED,
+    BLUETOOTH_DISABLED
 }

@@ -1,0 +1,34 @@
+AC0200000000CECE -- nothing
+AC0202F90000CEC9 -- 167.7 pounds, 2683.2 oucne, 76.06744kg
+
+
+AC02 FE000000CCCA -- session start
+
+AC02 012D0000CEFC -- first weight
+
+AC02 02F00000CEC0
+
+AC02 02F00000CABC -- last weight
+
+
+AC02 FD000000CBC8 -- next message is fat?
+
+AccessibilityNodeInfoCompat.ACTION_NEXT_AT_MOVEMENT_GRANULARITY
+example 1
+AC02 FD0102 65 CB 30
+example 2
+AC02 FD0102 91 CB 5C
+example 3
+AC02 FD0102 69 CB 34 -- 31% app
+example 4
+AC02 FD0102 5B CB 26 -- BMI=27.3 BFR=30.8%  muscle 37.9 water 50.5 bone 5.7lb
+example 5 
+AC02 FD0102 60 CB 2B              bmi=28.0 BFR=31.6   muscle 37.4 water 49.9 bone 5.7lb v 11.0 mas 168.2
+
+
+
+bone seem constant in maths
+last two muscle?
+
+AC02 FE0F0000CCD9 -- reporting finished
+AC02 FE010000CCCB -- scale sleeping
